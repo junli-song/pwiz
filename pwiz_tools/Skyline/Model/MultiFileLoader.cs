@@ -171,7 +171,7 @@ namespace pwiz.Skyline.Model
                 foreach (var loadItem in loadList)
                 {
                     // Ignore a file that is already being loaded (or is queued for loading).
-                    if (_loadingPaths.ContainsKey(loadItem.DataFile))
+                    if (_loadingPaths.Keys.Any(key => Equals(key.GetLocation(), loadItem.DataFile.GetLocation())))
                         continue;
                     int idIndex = document.Id.GlobalIndex;
                     _loadingPaths.Add(loadItem.DataFile, idIndex);

@@ -65,6 +65,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi
 
         protected virtual void Init(NameValueParameters nameValueParameters)
         {
+            // CONSIDER: likely will eventually need to add combine_ion_mobilty handling
             CentroidMs1 = nameValueParameters.GetBoolValue(Attr.centroid_ms1.ToString());
             CentroidMs2 = nameValueParameters.GetBoolValue(Attr.centroid_ms2.ToString());
             LockMassParameters = new LockMassParameters(
@@ -75,6 +76,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi
             Username = nameValueParameters.GetValue(Attr.username.ToString());
             EncodedPath = nameValueParameters.GetValue(Attr.path.ToString());
             ModifiedTime = nameValueParameters.GetDateValue(Attr.modified_time.ToString());
+            FilePathAndSampleId = new FilePathAndSampleId(GetFilePath());
         }
 
         public override MsDataFileUri ChangeCentroiding(bool centroidMS1, bool centroidMS2)
@@ -88,9 +90,10 @@ namespace pwiz.Skyline.Model.Results.RemoteApi
 
         public override MsDataFileUri ChangeLockMassParameters(LockMassParameters lockMassParameters)
         {
-            return ChangeProp(ImClone(this), im => im.LockMassParameters = lockMassParameters);
+            return ChangeProp(ImClone(this), im => im.LockMassParameters = lockMassParameters??LockMassParameters.EMPTY);
         }
 
+        public FilePathAndSampleId FilePathAndSampleId { get; private set; }
         public bool CentroidMs1 { get; private set; }
         public bool CentroidMs2 { get; private set; }
         public LockMassParameters LockMassParameters { get; private set; }
@@ -128,9 +131,9 @@ namespace pwiz.Skyline.Model.Results.RemoteApi
             return Path.GetExtension(GetFilePath());
         }
 
-        public override MsDataFileUri GetLocation()
+        public override FilePathAndSampleId GetLocation()
         {
-            return this;
+            return FilePathAndSampleId;
         }
 
         public override LockMassParameters GetLockMassParameters()
@@ -212,7 +215,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi
 
         public override string GetFilePath()
         {
-            return Uri.UnescapeDataString(EncodedPath);
+            return string.IsNullOrEmpty(EncodedPath) ? string.Empty : Uri.UnescapeDataString(EncodedPath);
         }
 
         public string LastPathPart

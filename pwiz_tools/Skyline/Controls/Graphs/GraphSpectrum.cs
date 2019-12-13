@@ -1503,7 +1503,7 @@ namespace pwiz.Skyline.Controls.Graphs
             SpectrumInfo = spectrumInfo;
             Precursor = precursor;
             ReplicateName = replicateName;
-            FilePath = filePath;
+            FilePath = filePath.GetLocation();
             FileOrder = fileOrder;
             RetentionTime = retentionTime;
             IsBest = isBest;
@@ -1515,7 +1515,7 @@ namespace pwiz.Skyline.Controls.Graphs
         public IsotopeLabelType LabelType { get { return SpectrumInfo.LabelType; } }
         public string ReplicateName { get; private set; }
         public bool IsReplicateUnique { get; set; }
-        public MsDataFileUri FilePath { get; private set; }
+        public FilePathAndSampleId FilePath { get; private set; }
         public string FileName { get { return FilePath.GetFileName(); } }
         public int FileOrder { get; private set; }
         public double? RetentionTime { get; private set; }
@@ -1564,11 +1564,11 @@ namespace pwiz.Skyline.Controls.Graphs
         }
         public SpectrumIdentifier(MsDataFileUri sourceFile, double retentionTime)
         {
-            SourceFile = sourceFile;
+            SourceFile = sourceFile.GetLocation();
             RetentionTime = retentionTime;
         }
 
-        public MsDataFileUri SourceFile { get; private set; }
+        public FilePathAndSampleId SourceFile { get; private set; }
         public double RetentionTime { get; private set; }
     }
 

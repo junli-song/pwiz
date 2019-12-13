@@ -36,12 +36,12 @@ namespace pwiz.Skyline.Model.Results
     {
         public static readonly MeasuredResults EMPTY = new MeasuredResults(new ChromatogramSet[0]);
 
-        private static readonly HashSet<MsDataFileUri> EMPTY_FILES = new HashSet<MsDataFileUri>();
+        private static readonly HashSet<FilePathAndSampleId> EMPTY_FILES = new HashSet<FilePathAndSampleId>();
 
         private ImmutableList<ChromatogramSet> _chromatograms;
         private ImmutableDictionary<string, int> _dictNameToIndex;
         private ImmutableDictionary<int, int> _dictIdToIndex;
-        private HashSet<MsDataFileUri> _setFiles;
+        private HashSet<FilePathAndSampleId> _setFiles;
 
         private int _countUnloaded;
 
@@ -49,7 +49,7 @@ namespace pwiz.Skyline.Model.Results
         private ChromatogramCache _cacheRecalc;
         private ImmutableList<ChromatogramCache> _listPartialCaches;
         private ImmutableList<string> _listSharedCachePaths;
-        private HashSet<MsDataFileUri> _setCachedFiles = EMPTY_FILES;
+        private HashSet<FilePathAndSampleId> _setCachedFiles = EMPTY_FILES;
 
         public MeasuredResults(IList<ChromatogramSet> chromatograms, bool disableJoining = false)
         {
@@ -75,7 +75,7 @@ namespace pwiz.Skyline.Model.Results
                 _chromatograms = MakeReadOnly(value.ToArray());
                 var dictNameToIndex = new Dictionary<string, int>();
                 var dictIdToIndex = new Dictionary<int, int>();
-                _setFiles = new HashSet<MsDataFileUri>();
+                _setFiles = new HashSet<FilePathAndSampleId>();
                 int count = _chromatograms.Count;
                 for (int i = 0; i < count; i++)
                 {
@@ -161,7 +161,7 @@ namespace pwiz.Skyline.Model.Results
             get { return Caches.Select(cache => cache.CachePath); }
         }
 
-        public IEnumerable<MsDataFileUri> CachedFilePaths
+        public IEnumerable<FilePathAndSampleId> CachedFilePaths
         {
             get { return Caches.SelectMany(cache => cache.CachedFilePaths); }
         }
@@ -173,7 +173,7 @@ namespace pwiz.Skyline.Model.Results
 
         public bool IsCachedFile(MsDataFileUri filePath)
         {
-            return _setCachedFiles.Contains(filePath.GetLocation()); // Search filename only, ignoring centroiding, combineIM etc
+            return _setCachedFiles.Any(cf => Equals(cf, filePath.GetLocation())); // Search filename only, ignoring centroiding, combineIM etc
         }
 
         public IEnumerable<Type> CachedScoreTypes
@@ -293,6 +293,11 @@ namespace pwiz.Skyline.Model.Results
 
         public ChromSetFileMatch FindMatchingMSDataFile(MsDataFileUri filePathFind)
         {
+            return FindMatchingMSDataFile(filePathFind.GetLocation());
+        }
+
+        public ChromSetFileMatch FindMatchingMSDataFile(FilePathAndSampleId filePathFind)
+        {
             // First look for an exact match
             var exactMatch = FindExactNameMatchingMSDataFile(filePathFind);
             if (exactMatch != null)
@@ -312,7 +317,7 @@ namespace pwiz.Skyline.Model.Results
             return null;
         }
 
-        public ChromSetFileMatch FindMatchingOrExistingMSDataFile(MsDataFileUri filePathFind)
+        public ChromSetFileMatch FindMatchingOrExistingMSDataFile(FilePathAndSampleId filePathFind)
         {
             // First look for an exact match, ignoring any details like centroid or combineIMS settins
             var exactMatch = FindExactNameMatchingMSDataFile(filePathFind);
@@ -336,7 +341,7 @@ namespace pwiz.Skyline.Model.Results
         /// <summary>
         /// Look for this file in the list, ignoring details like centroiding, combineIonMobilitySpectra etc
         /// </summary>
-        private ChromSetFileMatch FindExactNameMatchingMSDataFile(MsDataFileUri fileUri)
+        private ChromSetFileMatch FindExactNameMatchingMSDataFile(FilePathAndSampleId fileUri)
         {
             var filePathFind = fileUri.GetFilePath();
             int fileOrder = 0;
@@ -430,7 +435,7 @@ namespace pwiz.Skyline.Model.Results
         {
             _cacheFinal = cacheFinal;
             _listPartialCaches = MakeReadOnly(partialCaches);
-            _setCachedFiles = new HashSet<MsDataFileUri>(CachedFilePaths.Select(p => p.GetLocation()));
+            _setCachedFiles = new HashSet<FilePathAndSampleId>(CachedFilePaths);
         }
 
         public MeasuredResults UpdateCaches(string documentPath, MeasuredResults resultsCache)
@@ -452,7 +457,7 @@ namespace pwiz.Skyline.Model.Results
 
             string cachePath = ChromatogramCache.FinalPathForName(documentPath, null);
             var cachedFiles = results.CachedFileInfos.Distinct(new PathComparer<ChromCachedFile>()).ToArray();
-            var dictCachedFiles = cachedFiles.ToDictionary(cachedFile => cachedFile.FilePath.GetLocation()); // Ignore centroiding, combineIMS etc for key purposes
+            var dictCachedFiles = cachedFiles.ToDictionary(cachedFile => cachedFile.FilePath);
             var enumCachedNames = cachedFiles.Select(cachedFile => cachedFile.FilePath.GetFileName());
             var setCachedFileNames = new HashSet<string>(enumCachedNames);
             var chromatogramSets = new List<ChromatogramSet>();
@@ -533,7 +538,7 @@ namespace pwiz.Skyline.Model.Results
         {
             return listNewCaches.Any(
                 cache => chromatogramSet.MSDataFilePaths.Any(
-                    msDataFilePath => cache.CachedFilePaths.Contains(msDataFilePath)));
+                    msDataFilePath => cache.CachedFilePaths.Contains(msDataFilePath.GetLocation())));
         }
 
         public bool TryGetChromatogramSet(string name, out ChromatogramSet chromatogramSet, out int index)

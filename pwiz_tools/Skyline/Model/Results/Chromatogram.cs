@@ -543,13 +543,14 @@ namespace pwiz.Skyline.Model.Results
                 var path = fileInfos[i].FilePath.GetLocation(); // Strips any decoration like "?centroid_ms1=true" etc
 
                 ChromCachedFile fileInfo;
-                if (cachedPaths.TryGetValue(path, out fileInfo))
+                var key = cachedPaths.Keys.FirstOrDefault(p => Equals(p.GetLocation(), path));
+                if (key != null && cachedPaths.TryGetValue(key, out fileInfo))
                     fileInfos[i] = fileInfos[i].ChangeInfo(fileInfo);
                 else if (cachedFileNames == null || cachedFileNames.Contains(path.GetFileName()))
                 {
                     // If the name but not the file was found, check for an
                     // existing file in the cache file's directory.
-                    var dataFilePath = GetExistingDataFilePath(cachePath, path);
+                    var dataFilePath = GetExistingDataFilePath(cachePath, fileInfos[i].FilePath);
                     if (dataFilePath != null && cachedPaths.TryGetValue(dataFilePath, out fileInfo))
                         fileInfos[i] = fileInfos[i].ChangeInfo(fileInfo);
                 }
@@ -606,7 +607,7 @@ namespace pwiz.Skyline.Model.Results
             MsDataFilePath msDataFilePath = msDataFileUri as MsDataFilePath;
             if (null == msDataFilePath)
             {
-                return msDataFileUri;
+                return msDataFileUri; // Not a local file, just return the URL
             }
             string dataFilePathPartIgnore;
             return GetExistingDataFilePath(cachePath, msDataFilePath, out dataFilePathPartIgnore);

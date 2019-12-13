@@ -2267,7 +2267,7 @@ namespace pwiz.Skyline.Controls.Graphs
                         }
                     }
                     var selectedSpectrum = _stateProvider.SelectedSpectrum;
-                    if (selectedSpectrum != null && Equals(FilePath, selectedSpectrum.FilePath))
+                    if (selectedSpectrum != null && Equals(FilePath.GetLocation(), selectedSpectrum.FilePath))
                     {
                         chromGraphPrimary.SelectedRetentionMsMs = selectedSpectrum.RetentionTime;
                     }

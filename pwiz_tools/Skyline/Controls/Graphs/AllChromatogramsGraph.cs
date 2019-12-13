@@ -47,8 +47,8 @@ namespace pwiz.Skyline.Controls.Graphs
         private int _nextRetry;
         private ImportResultsRetryCountdownDlg _retryDlg;
 
-        private Dictionary<MsDataFileUri, FileProgressControl> _fileProgressControls =
-            new Dictionary<MsDataFileUri, FileProgressControl>();
+        private Dictionary<FilePathAndSampleId, FileProgressControl> _fileProgressControls =
+            new Dictionary<FilePathAndSampleId, FileProgressControl>();
 
         private const int RETRY_INTERVAL = 10;
         private const int RETRY_COUNTDOWN = 30;

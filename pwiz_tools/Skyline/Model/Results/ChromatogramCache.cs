@@ -147,7 +147,7 @@ namespace pwiz.Skyline.Model.Results
         public IList<ChromCachedFile> CachedFiles { get { return _cachedFiles; } }
         public IPooledStream ReadStream { get; private set; }
 
-        public IEnumerable<MsDataFileUri> CachedFilePaths
+        public IEnumerable<FilePathAndSampleId> CachedFilePaths
         {
             get { return CachedFiles.Select(cachedFile => cachedFile.FilePath.GetLocation()); } // Strip any "?combine_ims=true" etc decoration
         }
@@ -221,9 +221,9 @@ namespace pwiz.Skyline.Model.Results
         /// <summary>
         /// Returns true, if a single path can be found in a set of caches.
         /// </summary>
-        private static bool IsCovered(MsDataFileUri path, IEnumerable<ChromatogramCache> caches)
+        private static bool IsCovered(FilePathAndSampleId path, IEnumerable<ChromatogramCache> caches)
         {
-            return caches.Any(cache => cache.CachedFilePaths.Contains(path.GetLocation())); // Strip any "?combine_ims=true" etc decoration
+            return caches.Any(cache => cache.CachedFilePaths.Contains(path)); // Strip any "?combine_ims=true" etc decoration
         }
 
         public MsDataFileScanIds LoadMSDataFileScanIds(int fileIndex)
