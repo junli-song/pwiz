@@ -264,7 +264,7 @@ namespace pwiz.SkylineTestUtil
                     new ChangedPeakBoundsEventArgs(pathGroup,
                         null,
                         graphChrom.NameSet,
-                        graphChrom.ChromGroupInfos[0].FilePath,
+                        graphChrom.ChromGroupInfos[0].FileUri,
                         graphChrom.GraphItems.First().GetNearestDisplayTime(startDisplayTime),
                         graphChrom.GraphItems.First().GetNearestDisplayTime(endDisplayTime),
                         PeakIdentification.ALIGNED,

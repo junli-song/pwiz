@@ -364,7 +364,7 @@ namespace pwiz.Skyline.Model
                                 docNew = docNew.AddPrecursorResultsAnnotations(groupPath, fileId, annotations);
                             }
                             // Change peak
-                            var filePath = chromSet.GetFileInfo(fileId).FilePath;
+                            var filePath = chromSet.GetFileInfo(fileId).FileUri;
                             if (changePeaks)
                             {
                                 docNew = docNew.ChangePeak(groupPath, nameSet, filePath,
@@ -500,7 +500,7 @@ namespace pwiz.Skyline.Model
                                 CountMissing++;
                                 var fileId = groupChromInfo.FileId;
                                 var fileInfo = set.GetFileInfo(fileId);
-                                var filePath = fileInfo.FilePath;
+                                var filePath = fileInfo.FileUri;
                                 // Remove annotations for defs that were imported into the document and were on this peptide prior to import
                                 var newAnnotationValues = groupChromInfo.Annotations.ListAnnotations().ToList();
                                 newAnnotationValues = newAnnotationValues.Where(a => !AnnotationsAdded.Contains(a.Key)).ToList();

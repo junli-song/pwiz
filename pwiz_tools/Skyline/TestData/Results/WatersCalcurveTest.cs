@@ -314,7 +314,7 @@ namespace pwiz.SkylineTestData.Results
                 var measuredResults = docResults.Settings.MeasuredResults;
                 var chromatograms = measuredResults.Chromatograms;
                 Assert.AreEqual(2, chromatograms.Count);
-                var dictPathToIndex = new Dictionary<MsDataFileUri, int>();
+                var dictPathToIndex = new Dictionary<FilePathAndSampleId, int>();
                 for (int i = 0; i < 2; i++)
                 {
                     Assert.AreEqual(listChromatograms[i].BatchName, chromatograms[i].BatchName);

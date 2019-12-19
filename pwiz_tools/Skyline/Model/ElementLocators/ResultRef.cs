@@ -92,7 +92,7 @@ namespace pwiz.Skyline.Model.ElementLocators
 
         public ChromFileInfo FindChromFileInfo(ChromatogramSet chromatogramSet)
         {
-            return chromatogramSet.MSDataFileInfos.FirstOrDefault(info => Matches(info.FilePath));
+            return chromatogramSet.MSDataFileInfos.FirstOrDefault(info => Matches(info.FileUri)); // CONSIDER - really uri? or filename?
         }
 
         protected bool Equals(ResultRef other)
@@ -186,11 +186,11 @@ namespace pwiz.Skyline.Model.ElementLocators
                 var chromFileInfo = chromatogramSet.GetFileInfo(chromInfo.FileId);
                 if (ResultFileRef.UseFullPath(chromatogramSet))
                 {
-                    result = (ResultRef<TDocNode, TChromInfo>)result.ChangeResultFilePath(chromFileInfo.FilePath);
+                    result = (ResultRef<TDocNode, TChromInfo>)result.ChangeResultFilePath(chromFileInfo.FileUri);
                 }
                 else
                 {
-                    result = (ResultRef<TDocNode, TChromInfo>)result.ChangeResultFileName(ResultFileRef.GetName(chromFileInfo.FilePath));
+                    result = (ResultRef<TDocNode, TChromInfo>)result.ChangeResultFileName(ResultFileRef.GetName(chromFileInfo.FileUri));
                 }
             }
             return result;

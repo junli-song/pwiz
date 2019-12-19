@@ -53,11 +53,11 @@ namespace pwiz.Skyline.Model.Databinding.Entities
         }
         public string SampleName
         {
-            get { return ChromFileInfo.FilePath.GetSampleName(); }
+            get { return ChromFileInfo.FileUri.GetSampleName(); }
         }
         public override string ToString()
         {
-            return ChromFileInfo.FilePath.ToString();
+            return ChromFileInfo.FileUri.ToString();
         }
         public DateTime? ModifiedTime { get { return ChromFileInfo.FileWriteTime; } }
         public DateTime? AcquiredTime { get { return ChromFileInfo.RunStartTime; } }

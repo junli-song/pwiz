@@ -1417,7 +1417,7 @@ namespace pwiz.Skyline.Model.Results
                                string instrumentSerialNumber,
                                IEnumerable<MsInstrumentConfigInfo> instrumentInfoList)
         {
-            FilePath = filePath;
+            FileUri = filePath;
             Flags = (flags & ~FlagValues.ion_mobility_type_bitmask) | (FlagValues)((int)ionMobilityUnits << 4);
             FileWriteTime = fileWriteTime;
             RunStartTime = runStartTime;
@@ -1431,7 +1431,8 @@ namespace pwiz.Skyline.Model.Results
             InstrumentInfoList = ImmutableList.ValueOf(instrumentInfoList) ?? ImmutableList<MsInstrumentConfigInfo>.EMPTY;
         }
 
-        public MsDataFileUri FilePath { get; private set; }
+        public FilePathAndSampleId FilePath { get { return FileUri.GetLocation(); } }
+        public MsDataFileUri FileUri { get; private set; }
         public FlagValues Flags { get; private set; }
         public DateTime FileWriteTime { get; private set; }
         public DateTime? RunStartTime { get; private set; }
@@ -1447,7 +1448,7 @@ namespace pwiz.Skyline.Model.Results
 
         public bool IsCurrent
         {
-            get { return Equals(FileWriteTime, GetLastWriteTime(FilePath)); }
+            get { return Equals(FileWriteTime, GetLastWriteTime(FileUri)); }
         }
 
         public bool? IsSingleMatchMz
@@ -1472,7 +1473,7 @@ namespace pwiz.Skyline.Model.Results
 
         public ChromCachedFile ChangeFilePath(MsDataFileUri filePath)
         {
-            return ChangeProp(ImClone(this), im => im.FilePath = filePath);
+            return ChangeProp(ImClone(this), im => im.FileUri = filePath);
         }
 
         public ChromCachedFile ChangeSampleId(string sampleId)
@@ -1614,7 +1615,8 @@ namespace pwiz.Skyline.Model.Results
 
     public interface IPathContainer
     {
-        MsDataFileUri FilePath { get; }
+        FilePathAndSampleId FilePath { get; }
+        MsDataFileUri FileUri { get; }
     }
 
     public class PathComparer<TItem> : IEqualityComparer<TItem>
@@ -1626,12 +1628,12 @@ namespace pwiz.Skyline.Model.Results
             {
                 return ReferenceEquals(f1, null) && ReferenceEquals(f2, null);
             }
-            return Equals(f1.FilePath, f2.FilePath);
+            return Equals(f1.FileUri, f2.FileUri);
         }
 
         public int GetHashCode(TItem f)
         {
-            return f.FilePath.GetHashCode();
+            return f.FileUri.GetHashCode();
         }
     }
 
@@ -2082,7 +2084,8 @@ namespace pwiz.Skyline.Model.Results
             }
         }
         public double? PrecursorCollisionalCrossSection { get { return _groupHeaderInfo.CollisionalCrossSection; } }
-        public MsDataFileUri FilePath { get { return _allFiles[_groupHeaderInfo.FileIndex].FilePath; } }
+        public FilePathAndSampleId FilePath { get { return FileUri.GetLocation(); } }
+        public MsDataFileUri FileUri { get { return _allFiles[_groupHeaderInfo.FileIndex].FileUri; } }
         public DateTime FileWriteTime { get { return _allFiles[_groupHeaderInfo.FileIndex].FileWriteTime; } }
         public DateTime? RunStartTime { get { return _allFiles[_groupHeaderInfo.FileIndex].RunStartTime; } }
         public virtual int NumTransitions { get { return _groupHeaderInfo.NumTransitions; } }
@@ -2477,7 +2480,7 @@ namespace pwiz.Skyline.Model.Results
 
         public int BestPeakIndex { get { return _groupInfo != null ? _groupInfo.BestPeakIndex : -1; } }
 
-        public MsDataFileUri FilePath { get { return _groupInfo.FilePath; } }
+        public MsDataFileUri FilePath { get { return _groupInfo.FileUri; } }
 
         public SignedMz PrecursorMz
         {

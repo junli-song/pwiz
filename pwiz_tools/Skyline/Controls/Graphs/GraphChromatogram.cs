@@ -650,7 +650,7 @@ namespace pwiz.Skyline.Controls.Graphs
                 var chromGroupInfos = ChromGroupInfos;
                 int i = chromGroupInfos.IndexOf(info => info != null);
 
-                return (i != -1 ? chromGroupInfos[i].FilePath : null);
+                return (i != -1 ? chromGroupInfos[i].FileUri : null);
             }
         }
 
@@ -2389,7 +2389,7 @@ namespace pwiz.Skyline.Controls.Graphs
                     {
                         if (info != null)
                         {
-                            name = SampleHelp.GetPathSampleNamePart(info.FilePath);
+                            name = SampleHelp.GetPathSampleNamePart(info.FileUri);
                             if (string.IsNullOrEmpty(name))
                                 name = info.FilePath.GetFileName();
                             break;
@@ -2454,7 +2454,7 @@ namespace pwiz.Skyline.Controls.Graphs
                 // Get chromatogram sets for all transition groups, recording unique
                 // file paths in the process.
                 var listArrayChromInfo = new List<ChromatogramGroupInfo[]>();
-                var listFiles = new List<MsDataFileUri>();
+                var listFiles = new List<FilePathAndSampleId>();
                 ChromatogramGroupInfo[] arrayAllIonsChromInfo;
                 if (!results.TryLoadAllIonsChromatogram(chromatograms, extractor, true,
                                                         out arrayAllIonsChromInfo))
@@ -2524,7 +2524,7 @@ namespace pwiz.Skyline.Controls.Graphs
                 // Get chromatogram sets for all transition groups, recording unique
                 // file paths in the process.
                 var listArrayChromInfo = new List<ChromatogramGroupInfo[]>();
-                var listFiles = new List<MsDataFileUri>();
+                var listFiles = new List<FilePathAndSampleId>();
                 for (int i = 0; i < nodeGroups.Length; i++)
                 {
                     ChromatogramGroupInfo[] arrayChromInfo;

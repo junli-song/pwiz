@@ -173,8 +173,14 @@ namespace pwiz.Skyline.Model.Results
 
         public bool IsCachedFile(MsDataFileUri filePath)
         {
-            return _setCachedFiles.Any(cf => Equals(cf, filePath.GetLocation())); // Search filename only, ignoring centroiding, combineIM etc
+            return IsCachedFile(filePath.GetLocation());
         }
+        public bool IsCachedFile(FilePathAndSampleId filePath)
+        {
+            return _setCachedFiles.Any(cf => Equals(cf, filePath));
+        }
+
+
 
         public IEnumerable<Type> CachedScoreTypes
         {
@@ -244,9 +250,9 @@ namespace pwiz.Skyline.Model.Results
             }
         }
 
-        public bool IsDataFilePath(MsDataFileUri path)
+        public bool IsDataFilePath(FilePathAndSampleId path)
         {
-            return _setFiles.Contains(path.GetLocation());
+            return _setFiles.Contains(path);
         }
 
         public ChromFileInfo GetChromFileInfo<TChromInfo>(Results<TChromInfo> results, int replicateIndex)
@@ -274,7 +280,7 @@ namespace pwiz.Skyline.Model.Results
 
         public ChromFileInfo GetChromFileInfo(MsDataFileUri filePath)
         {
-            return Chromatograms.Select(chromatogramSet => chromatogramSet.GetFileInfo(filePath))
+            return Chromatograms.Select(chromatogramSet => chromatogramSet.GetFileInfo(filePath.GetLocation()))
                                 .FirstOrDefault(fileInfo => fileInfo != null);
         }
 
@@ -457,7 +463,7 @@ namespace pwiz.Skyline.Model.Results
 
             string cachePath = ChromatogramCache.FinalPathForName(documentPath, null);
             var cachedFiles = results.CachedFileInfos.Distinct(new PathComparer<ChromCachedFile>()).ToArray();
-            var dictCachedFiles = cachedFiles.ToDictionary(cachedFile => cachedFile.FilePath);
+            var dictCachedFiles = cachedFiles.ToDictionary(cachedFile => cachedFile.FileUri);
             var enumCachedNames = cachedFiles.Select(cachedFile => cachedFile.FilePath.GetFileName());
             var setCachedFileNames = new HashSet<string>(enumCachedNames);
             var chromatogramSets = new List<ChromatogramSet>();
@@ -565,7 +571,7 @@ namespace pwiz.Skyline.Model.Results
         {
             foreach (var cache in Caches)
             {
-                int fileIndex = cache.CachedFiles.IndexOf(f => Equals(f.FilePath, dataFilePath));
+                int fileIndex = cache.CachedFiles.IndexOf(f => Equals(f.FilePath, dataFilePath.GetLocation()));
                 if (fileIndex != -1)
                     return cache.LoadMSDataFileScanIds(fileIndex);
             }
@@ -1390,9 +1396,9 @@ namespace pwiz.Skyline.Model.Results
                 return true;
             }
 
-            private HashSet<MsDataFileUri> GetCachedPaths(bool allowLoading)
+            private HashSet<FilePathAndSampleId> GetCachedPaths(bool allowLoading)
             {
-                var cachedPaths = new HashSet<MsDataFileUri>();
+                var cachedPaths = new HashSet<FilePathAndSampleId>();
                 if (_resultsClone._listPartialCaches != null)
                 {
                     // Check that all partial caches are valid
@@ -1498,27 +1504,21 @@ namespace pwiz.Skyline.Model.Results
             }
 
             private List<DataFileReplicates> GetUncachedPaths(ICollection<DataFileReplicates> dataFileReplicatesList,
-                ICollection<MsDataFileUri> cachedPaths, string cachePath, bool allowLoading)
+                ICollection<FilePathAndSampleId> cachedPaths, string cachePath, bool allowLoading)
             {
-                // Keep a record of files which have been found in a new location
-                // on the local system, and need to be updated in these results.
-                Dictionary<MsDataFileUri, MsDataFileUri> dictReplace = null;
                 // Find the next file not represented in the list of partial caches
                 var uncachedPaths = new List<DataFileReplicates>();
                 foreach (var dataFileReplicates in dataFileReplicatesList)
                 {
-                    if (!cachedPaths.Contains(dataFileReplicates.DataFile))
+                    if (!cachedPaths.Contains(dataFileReplicates.DataFile.GetLocation()))
                     {
                         // First make sure the file wasn't found and loaded locally
                         var path = dataFileReplicates.DataFile;
                         if (cachedPaths.Count > 0 &&  path is MsDataFilePath)
                         {
                             var dataFilePath = ChromatogramSet.GetExistingDataFilePath(cachePath, path);
-                            if (cachedPaths.Contains(dataFilePath))
+                            if (cachedPaths.Contains(dataFilePath.GetLocation()))
                             {
-                                if (dictReplace == null)
-                                    dictReplace = new Dictionary<MsDataFileUri, MsDataFileUri>();
-                                dictReplace.Add(path, dataFilePath);
                                 continue;
                             }
                         }
@@ -1607,7 +1607,7 @@ namespace pwiz.Skyline.Model.Results
                 var xBuild = x as DataFileException;
                 if (xBuild != null)
                 {
-                    var newMeasuredResults = _document.Settings.MeasuredResults.FilterFiles(info => !Equals(info.FilePath, xBuild.ImportPath));
+                    var newMeasuredResults = _document.Settings.MeasuredResults.FilterFiles(info => !Equals(info.FilePath, xBuild.ImportPath.GetLocation()));
                     _completed(_documentPath, newMeasuredResults, _document.Settings.MeasuredResults);
                 }
 

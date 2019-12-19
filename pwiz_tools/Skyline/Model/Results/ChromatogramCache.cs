@@ -149,7 +149,7 @@ namespace pwiz.Skyline.Model.Results
 
         public IEnumerable<FilePathAndSampleId> CachedFilePaths
         {
-            get { return CachedFiles.Select(cachedFile => cachedFile.FilePath.GetLocation()); } // Strip any "?combine_ims=true" etc decoration
+            get { return CachedFiles.Select(cachedFile => cachedFile.FilePath); }
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace pwiz.Skyline.Model.Results
         /// </summary>
         private static bool IsCovered(FilePathAndSampleId path, IEnumerable<ChromatogramCache> caches)
         {
-            return caches.Any(cache => cache.CachedFilePaths.Contains(path)); // Strip any "?combine_ims=true" etc decoration
+            return caches.Any(cache => cache.CachedFilePaths.Contains(path));
         }
 
         public MsDataFileScanIds LoadMSDataFileScanIds(int fileIndex)
@@ -985,7 +985,7 @@ namespace pwiz.Skyline.Model.Results
             var cachedFileSerializer = cacheFormat.CachedFileSerializer();
             foreach (var cachedFile in chromCachedFiles)
             {
-                var filePathBytes = Encoding.UTF8.GetBytes(cachedFile.FilePath.ToString());
+                var filePathBytes = Encoding.UTF8.GetBytes(cachedFile.FileUri.ToString()); // Includes path and loading hints like lockmass correction, combine_ims, centroiding
                 var instrumentInfoBytes =
                     Encoding.UTF8.GetBytes(InstrumentInfoUtil.GetInstrumentInfoString(cachedFile.InstrumentInfoList));
                 var sampleIdBytes = Encoding.UTF8.GetBytes(cachedFile.SampleId ?? string.Empty);
@@ -1153,7 +1153,7 @@ namespace pwiz.Skyline.Model.Results
 
         public void GetStatusDimensions(MsDataFileUri msDataFilePath, out float? maxRetentionTime, out float? maxIntensity)
         {
-            int fileIndex = CachedFiles.IndexOf(f => Equals(f.FilePath, msDataFilePath));
+            int fileIndex = CachedFiles.IndexOf(f => Equals(f.FilePath, msDataFilePath.GetLocation()));
             if (fileIndex == -1)
             {
                 maxRetentionTime = maxIntensity = null;
@@ -1168,7 +1168,7 @@ namespace pwiz.Skyline.Model.Results
 
         public IEnumerable<ChromKeyIndices> GetChromKeys(MsDataFileUri msDataFilePath)
         {
-            int fileIndex = CachedFiles.IndexOf(f => Equals(f.FilePath, msDataFilePath));
+            int fileIndex = CachedFiles.IndexOf(f => Equals(f.FileUri, msDataFilePath));
             if (fileIndex == -1)
                 yield break;
 
@@ -1215,7 +1215,7 @@ namespace pwiz.Skyline.Model.Results
         public ChromatogramCache OptimizeToPath(CacheFormatVersion? formatVersion, string cachePathOpt,
             IEnumerable<MsDataFileUri> msDataFilePaths, IStreamManager streamManager, ILongWaitBroker progress)
         {
-            var keepFilePaths = new HashSet<MsDataFileUri>(msDataFilePaths);
+            var keepFilePaths = new HashSet<FilePathAndSampleId>(msDataFilePaths.Select(p => p.GetLocation()));
             var keepFileIndices = new HashSet<int>();
             for (int i = 0; i < _cachedFiles.Count; i++)
             {

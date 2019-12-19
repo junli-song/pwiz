@@ -191,7 +191,8 @@ namespace pwiz.Skyline.FileUI
                 var renamed = _renamedReplicates.Where(r => remainingReplicates.Any(rep => rep.Name == r.Value))
                     .Select(r => new RenamedReplicate(r.Key, r.Value)).ToList();
 
-                var removed = results.Chromatograms.Except(remainingReplicates)
+                // Look for any replicates removed from the list. Ignore file load parameters (centroiding, lockmass, combine_ims etc) for comparison purposes.
+                var removed = results.Chromatograms.Where(c => remainingReplicates.All(rr => !rr.Equals(c, true)))
                     .Where(chrom => renamed.All(r => r.OldName != chrom.Name))
                     .Select(c => c.Name).ToList();
 

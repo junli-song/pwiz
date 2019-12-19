@@ -211,7 +211,7 @@ namespace pwiz.Skyline.Model.Results
 
                     ChromatogramGroupInfo[] chromGroupInfos;
                     results.TryLoadChromatogram(i, nodePep, nodeGroup, tolerance, true, out chromGroupInfos);
-                    foreach (var chromInfo in chromGroupInfos.Where(c => Equals(filePath, c.FilePath)))
+                    foreach (var chromInfo in chromGroupInfos.Where(c => Equals(filePath, c.FileUri)))
                     {
                         if (!ProcessChromInfo(filePath, chromInfo, pair, nodeGroup, tolerance, libKey)) 
                             return false; // User cancelled
@@ -227,11 +227,11 @@ namespace pwiz.Skyline.Model.Results
             if (chromInfo.NumPeaks == 0)  // Due to data polarity mismatch, probably
                 return true;
             Assume.IsTrue(chromInfo.BestPeakIndex != -1);
-            var resultIndex = _document.Settings.MeasuredResults.Chromatograms.IndexOf(c => c.GetFileInfo(filePath) != null);
+            var resultIndex = _document.Settings.MeasuredResults.Chromatograms.IndexOf(c => c.GetFileInfo(filePath.GetLocation()) != null);
             if (resultIndex == -1)
                 return true;
-            var chromFileInfo = _document.Settings.MeasuredResults.Chromatograms[resultIndex].GetFileInfo(filePath);
-            Assume.IsTrue(Equals(chromFileInfo.FilePath.GetLockMassParameters(), filePath.GetLockMassParameters()));
+            var chromFileInfo = _document.Settings.MeasuredResults.Chromatograms[resultIndex].GetFileInfo(filePath.GetLocation());
+            Assume.IsTrue(Equals(chromFileInfo.FileUri.GetLockMassParameters(), filePath.GetLockMassParameters()));
 
             // Determine apex RT for DT measurement using most intense MS1 peak
             var apexRT = GetApexRT(nodeGroup, resultIndex, chromFileInfo, true) ??

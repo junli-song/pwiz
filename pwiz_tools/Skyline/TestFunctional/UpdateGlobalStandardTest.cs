@@ -290,7 +290,7 @@ namespace pwiz.SkylineTestFunctional
                             ElementLocator.Parse((string) row.Cells[colResultFileLocator.Index].Value));
                     var chromFileInfo = document.Settings.MeasuredResults.Chromatograms
                         .SelectMany(c => c.MSDataFileInfos)
-                        .FirstOrDefault(fileInfo => resultFileRef.Matches(fileInfo.FilePath));
+                        .FirstOrDefault(fileInfo => resultFileRef.Matches(fileInfo.FileUri));
                     Assert.IsNotNull(chromFileInfo);
                     var peptideChromInfo = FindChromInfo(peptideDocNode.Results, chromFileInfo.FileId);
                     var ratioToGlobalStandard = (double?) row.Cells[colRatioLightToGlobalStandard.Index].Value;

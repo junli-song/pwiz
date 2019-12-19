@@ -127,7 +127,7 @@ namespace pwiz.SkylineTestData
                 Assert.AreEqual(SAMPLE_NAMES.Count, chromatogramSet.MSDataFilePaths.Count());
                 for (int i = 0; i < SAMPLE_NAMES.Count; i++)
                 {
-                    var msDataFilePath = chromatogramSet.MSDataFileInfos[i].FilePath as MsDataFilePath;
+                    var msDataFilePath = chromatogramSet.MSDataFileInfos[i].FileUri as MsDataFilePath;
                     Assert.IsNotNull(msDataFilePath);
                     Assert.AreEqual(SAMPLE_NAMES[i], msDataFilePath.SampleName);
                     Assert.AreEqual(i, msDataFilePath.SampleIndex);

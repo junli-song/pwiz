@@ -131,7 +131,11 @@ namespace pwiz.Skyline.Model.Results
             return string.IsNullOrEmpty(SampleName) ? GetFileNameWithoutExtension() : SampleName;
         }
 
-
+        public string GetSampleName()
+        {
+            return SampleName;
+        }
+        
         public string GetFilePath()
         {
             return FilePath;
@@ -161,7 +165,8 @@ namespace pwiz.Skyline.Model.Results
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
+            if (obj.GetType() != GetType())
+                return false;
             return Equals((FilePathAndSampleId) obj);
         }
 
@@ -374,7 +379,7 @@ namespace pwiz.Skyline.Model.Results
                         !stack.Contains(@"MeasuredResults.RequiresCacheUpdate"))
                     {
                         Console.WriteLine();
-                        Console.WriteLine(@"CombineIonMobilitySpectra diff {0}", stack);
+                        //Console.WriteLine(@"CombineIonMobilitySpectra diff {0}", stack);
                     }
                 }
 
@@ -387,7 +392,8 @@ namespace pwiz.Skyline.Model.Results
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
+            if (obj.GetType() != GetType())
+                return false;
             return Equals((MsDataFilePath) obj);
         }
 
@@ -406,11 +412,18 @@ namespace pwiz.Skyline.Model.Results
 
         public override MsDataFileImpl OpenMsDataFile(bool simAsSpectra, int preferOnlyMsLevel, IEnumerable<MsDataFileImpl.PrecursorMzAndIonMobilityWindow> precursorMzAndIonMobilityWindows, bool ignoreZeroIntensityPoints)
         {
-            return new MsDataFileImpl(FilePath, Math.Max(SampleIndex, 0), LockMassParameters, simAsSpectra,
+            var inFile = new MsDataFileImpl(FilePath, Math.Max(SampleIndex, 0), LockMassParameters, simAsSpectra,
                 requireVendorCentroidedMS1: CentroidMs1, requireVendorCentroidedMS2: CentroidMs2,
                 ignoreZeroIntensityPoints: ignoreZeroIntensityPoints, preferOnlyMsLevel: preferOnlyMsLevel,
                 combineIonMobilitySpectra: CombineIonMobilitySpectra,
                 precursorMzAndIonMobilityWindows:precursorMzAndIonMobilityWindows);
+
+            if (CombineIonMobilitySpectra && !(inFile.HasIonMobilitySpectra && inFile.HasCombinedIonMobilitySpectra)) // Did we get the processing we asked for?
+            {
+                CombineIonMobilitySpectra = false; 
+            }
+
+            return inFile;
         }
     }
 }

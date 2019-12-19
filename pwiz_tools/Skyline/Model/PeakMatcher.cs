@@ -147,7 +147,7 @@ namespace pwiz.Skyline.Model
 
                     var bestMatch = GetPeakMatch(doc, chromSet, fileInfo, nodeTranGroup, referenceTarget, referenceMatchData);
                     if (bestMatch != null)
-                        doc = bestMatch.ChangePeak(doc, nodePepTree, nodeTranGroup, chromSet.Name, fileInfo.FilePath);
+                        doc = bestMatch.ChangePeak(doc, nodePepTree, nodeTranGroup, chromSet.Name, fileInfo.FileUri);
                 }
                 longWaitBroker.SetProgressCheckCancel(i + 1, chromatograms.Count);
             }

@@ -177,7 +177,7 @@ namespace pwiz.Skyline.Model
 //                            if (qvaluePicked.HasValue && qvaluePicked.Value > 0.01)
 //                                continue;
                             var fileInfo = set.GetFileInfo(trueInfo.FileId);
-                            var filePath = fileInfo.FilePath;
+                            var filePath = fileInfo.FileUri;
                             var key = new MatchKey(trueGroup.Id.GlobalIndex, trueInfo.FileId.GlobalIndex);
                             matches.Add(new PeakBoundsMatch(trueInfo, pickedInfo, key, chromSet, filePath,
                                 trueGroup, truePeptide,HasNoQValues, HasNoScores, ApexPresent));

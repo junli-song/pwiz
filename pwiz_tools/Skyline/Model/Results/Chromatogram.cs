@@ -133,7 +133,7 @@ namespace pwiz.Skyline.Model.Results
             if (!settings.HasResults || settings.MeasuredResults.IsLoaded)
                 return true;
 
-            var dataFilePath = tag as MsDataFileUri;
+            var dataFilePath = (tag as FilePathAndSampleId) ?? (tag as MsDataFileUri)?.GetLocation();
             if (dataFilePath != null)
             {
                 // Cancelled if file is no longer part of the document, or it is
@@ -369,12 +369,11 @@ namespace pwiz.Skyline.Model.Results
             }
         }
 
-        public bool ContainsFile(MsDataFileUri filePath)
+        public bool ContainsFile(FilePathAndSampleId filePath)
         {
             for (int i = 0; i < _msDataFileInfo.Count; i++)
             {
-                // Compare ignoring centroiding, combineIMS etc
-                if (Equals(_msDataFileInfo[i].FilePath.GetLocation(), filePath.GetLocation()))
+                if (Equals(_msDataFileInfo[i].FilePath, filePath))
                     return true;
             }
             return false;
@@ -382,7 +381,7 @@ namespace pwiz.Skyline.Model.Results
 
         public int FileCount { get { return _msDataFileInfo.Count; } }
 
-        public IEnumerable<MsDataFileUri> MSDataFilePaths { get { return MSDataFileInfos.Select(info => info.FilePath); } }
+        public IEnumerable<MsDataFileUri> MSDataFilePaths { get { return MSDataFileInfos.Select(info => info.FileUri); } }
 
         public bool IsLoaded { get { return !MSDataFileInfos.Contains(info => !info.FileWriteTime.HasValue); } }
 
@@ -416,7 +415,7 @@ namespace pwiz.Skyline.Model.Results
             return GetFileInfo(chromGroupInfo.FilePath);
         }
 
-        public ChromFileInfo GetFileInfo(MsDataFileUri filePath)
+        public ChromFileInfo GetFileInfo(FilePathAndSampleId filePath)
         {
             return GetFileInfo(IndexOfPath(filePath));
         }
@@ -430,7 +429,7 @@ namespace pwiz.Skyline.Model.Results
             return MSDataFileInfos.IndexOf(info => ReferenceEquals(info.Id, fileId));
         }
 
-        public int IndexOfPath(MsDataFileUri filePath)
+        public int IndexOfPath(FilePathAndSampleId filePath)
         {
             return MSDataFileInfos.IndexOf(info => Equals(filePath, info.FilePath));
         }
@@ -442,8 +441,14 @@ namespace pwiz.Skyline.Model.Results
 
         public ChromFileInfoId FindFile(MsDataFileUri filePath)
         {
+            return GetFileId(IndexOfPath(filePath.GetLocation()));
+        }
+
+        public ChromFileInfoId FindFile(FilePathAndSampleId filePath)
+        {
             return GetFileId(IndexOfPath(filePath));
         }
+
 
         public ChromFileInfoId FindFileById(string id)
         {
@@ -480,7 +485,7 @@ namespace pwiz.Skyline.Model.Results
             var set = ImClone(this);
 
             // Be sure to preserve existing file info objects
-            var dictPathToFileInfo = MSDataFileInfos.ToLookup(info => info.FilePath.GetLocation());
+            var dictPathToFileInfo = MSDataFileInfos.ToLookup(info => info.FilePath);
             var listFileInfos = new List<ChromFileInfo>();
             foreach (var filePath in prop)
             {
@@ -491,7 +496,7 @@ namespace pwiz.Skyline.Model.Results
                 }
                 else
                 {
-                    if (!Equals(chromFileInfo.FilePath, filePath))
+                    if (!Equals(chromFileInfo.FileUri, filePath))
                     {
                         chromFileInfo = chromFileInfo.ChangeFilePath(filePath);
                     }
@@ -539,8 +544,8 @@ namespace pwiz.Skyline.Model.Results
             for (int i = 0; i < fileInfos.Length; i++)
             {
                 fileInfos[i] = MSDataFileInfos[i];
-                
-                var path = fileInfos[i].FilePath.GetLocation(); // Strips any decoration like "?centroid_ms1=true" etc
+
+                var path = fileInfos[i].FilePath;
 
                 ChromCachedFile fileInfo;
                 var key = cachedPaths.Keys.FirstOrDefault(p => Equals(p.GetLocation(), path));
@@ -550,7 +555,7 @@ namespace pwiz.Skyline.Model.Results
                 {
                     // If the name but not the file was found, check for an
                     // existing file in the cache file's directory.
-                    var dataFilePath = GetExistingDataFilePath(cachePath, fileInfos[i].FilePath);
+                    var dataFilePath = GetExistingDataFilePath(cachePath, fileInfos[i].FileUri);
                     if (dataFilePath != null && cachedPaths.TryGetValue(dataFilePath, out fileInfo))
                         fileInfos[i] = fileInfos[i].ChangeInfo(fileInfo);
                 }
@@ -802,8 +807,8 @@ namespace pwiz.Skyline.Model.Results
             {
                 writer.WriteStartElement(EL.sample_file);
                 writer.WriteAttribute(ATTR.id, GetOrdinalSaveId(i++));
-                writer.WriteAttribute(ATTR.file_path, fileInfo.FilePath);
-                writer.WriteAttribute(ATTR.sample_name, fileInfo.FilePath.GetSampleOrFileName());
+                writer.WriteAttribute(ATTR.file_path, fileInfo.FileUri);
+                writer.WriteAttribute(ATTR.sample_name, fileInfo.FileUri.GetSampleOrFileName());
                 writer.WriteAttributeIfString(ATTR.sample_id, fileInfo.SampleId);
                 writer.WriteAttributeIfString(ATTR.instrument_serial_number, fileInfo.InstrumentSerialNumber);
                 if (fileInfo.RunStartTime != null)
@@ -876,13 +881,29 @@ namespace pwiz.Skyline.Model.Results
 
         public bool Equals(ChromatogramSet obj)
         {
+            return Equals(obj, false);
+        }
+        public bool Equals(ChromatogramSet obj, bool compareFileLocationsOnly)
+            {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             // Why isn't "OptimizationFunction" included in "Equals"?
             if (!base.Equals(obj))
                 return false;
-            if (!ArrayUtil.EqualsDeep(obj.MSDataFileInfos, MSDataFileInfos))
-                return false; 
+
+            // Sometimes we only want to compare file paths, ignoring things like combine_ims, centroiding etc
+            if (MSDataFileInfos == null != (obj.MSDataFileInfos == null))
+                return false;
+            if (MSDataFileInfos == null || (obj.MSDataFileInfos == null))
+                return false;
+            if (MSDataFileInfos.Count != obj.MSDataFileInfos.Count)
+                return false;
+            for (var i = 0; i < MSDataFileInfos.Count; i++)
+            {
+                if (!MSDataFileInfos[i].Equals(obj.MSDataFileInfos[i], compareFileLocationsOnly))
+                    return false;
+            }
+
             if (!Equals(obj.Annotations, Annotations))
                 return false;
             if (!obj.UseForRetentionTimeFilter == UseForRetentionTimeFilter)
@@ -945,7 +966,7 @@ namespace pwiz.Skyline.Model.Results
                 FileWriteTime = remoteUrl.ModifiedTime;
                 filePath = remoteUrl.ChangeModifiedTime(null);
             }
-            FilePath = filePath;
+            FileUri = filePath;
             InstrumentInfoList = new MsInstrumentConfigInfo[0];
         }
 
@@ -953,7 +974,8 @@ namespace pwiz.Skyline.Model.Results
 
         public ChromFileInfoId FileId { get { return (ChromFileInfoId) Id; }}
         public int FileIndex { get { return Id.GlobalIndex; } }
-        public MsDataFileUri FilePath { get; private set; }
+        public FilePathAndSampleId FilePath { get { return FileUri.GetLocation(); } }
+        public MsDataFileUri FileUri { get; private set; }
         public DateTime? FileWriteTime { get; private set; }
         public DateTime? RunStartTime { get; private set; }
         public double MaxRetentionTime { get; private set; }
@@ -982,7 +1004,7 @@ namespace pwiz.Skyline.Model.Results
 
         public ChromFileInfo ChangeFilePath(MsDataFileUri prop)
         {
-            return ChangeProp(ImClone(this), im => im.FilePath = prop);
+            return ChangeProp(ImClone(this), im => im.FileUri = prop);
         }
 
         public ChromFileInfo ChangeHasMidasSpectra(bool prop)
@@ -997,14 +1019,14 @@ namespace pwiz.Skyline.Model.Results
 
         public ChromFileInfo ChangeHasCombinedIonMobility(bool prop)
         {
-            return ChangeProp(ImClone(this), im => im.FilePath = im.FilePath.ChangeCombineIonMobilitySpectra(prop));
+            return ChangeProp(ImClone(this), im => im.FileUri = im.FileUri.ChangeCombineIonMobilitySpectra(prop));
         }
 
         public ChromFileInfo ChangeInfo(ChromCachedFile fileInfo)
         {
             return ChangeProp(ImClone(this), im =>
                                                  {
-                                                     im.FilePath = fileInfo.FilePath;
+                                                     im.FileUri = fileInfo.FileUri;
                                                      im.FileWriteTime = fileInfo.FileWriteTime;
                                                      im.RunStartTime = fileInfo.RunStartTime;
                                                      im.InstrumentInfoList = fileInfo.InstrumentInfoList.ToArray();
@@ -1053,12 +1075,24 @@ namespace pwiz.Skyline.Model.Results
 
         public bool Equals(ChromFileInfo other)
         {
+            return Equals(other, false);
+        }
+        public bool Equals(ChromFileInfo other, bool compareFilePathsOnly)
+        {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             if (!Equals(other.Id, Id))
                 return false;
-            if (!Equals(other.FilePath, FilePath))
-                return false;
+            if (compareFilePathsOnly)
+            {
+                if (!Equals(other.FilePath, FilePath))
+                    return false;
+            }
+            else
+            {
+                if (!Equals(other.FileUri, FileUri))
+                    return false;
+            }
             if (!other.FileWriteTime.Equals(FileWriteTime))
                 return false;
             if (!other.RunStartTime.Equals(RunStartTime))
@@ -1100,7 +1134,7 @@ namespace pwiz.Skyline.Model.Results
             unchecked
             {
                 int result = Id.GetHashCode();
-                result = (result*397) ^ FilePath.GetHashCode();
+                result = (result*397) ^ FileUri.GetHashCode();
                 result = (result*397) ^ (FileWriteTime.HasValue ? FileWriteTime.Value.GetHashCode() : 0);
                 result = (result*397) ^ (RunStartTime.HasValue ? RunStartTime.Value.GetHashCode() : 0);
                 result = (result*397) ^

@@ -697,7 +697,7 @@ namespace pwiz.SkylineTestData.Results
         private IDictionary<MsDataFileUri, TransitionChromInfo> ToDict(SrmDocument doc, ChromInfoList<TransitionChromInfo> chromInfoList)
         {
             return chromInfoList.ToDictionary(c =>
-                doc.MeasuredResults.MSDataFileInfos.First(fi => ReferenceEquals(fi.FileId, c.FileId)).FilePath);
+                doc.MeasuredResults.MSDataFileInfos.First(fi => ReferenceEquals(fi.FileId, c.FileId)).FileUri);
         }
     }
 }

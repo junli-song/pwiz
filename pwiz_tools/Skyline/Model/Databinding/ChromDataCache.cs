@@ -71,7 +71,7 @@ namespace pwiz.Skyline.Model.Databinding
             }
             foreach (var chromatogramGroupInfo in chromatogramGroupInfos)
             {
-                if (Equals(chromatogramGroupInfo.FilePath, filePath))
+                if (Equals(chromatogramGroupInfo.FilePath, filePath.GetLocation()))
                 {
                     return chromatogramGroupInfo;
                 }

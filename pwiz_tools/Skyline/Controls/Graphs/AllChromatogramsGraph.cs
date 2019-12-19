@@ -42,7 +42,7 @@ namespace pwiz.Skyline.Controls.Graphs
         private int _selected = -1;
         private bool _selectionIsSticky;
         private readonly int _multiFileWindowWidth;
-        private readonly List<MsDataFileUri> _partialProgressList = new List<MsDataFileUri>();
+        private readonly List<FilePathAndSampleId> _partialProgressList = new List<FilePathAndSampleId>();
         private DateTime _retryTime;
         private int _nextRetry;
         private ImportResultsRetryCountdownDlg _retryDlg;
@@ -424,11 +424,11 @@ namespace pwiz.Skyline.Controls.Graphs
             graphChromatograms.Visible = ReferenceEquals(control, graphChromatograms);
         }
 
-        private ChromatogramLoadingStatus FindStatus(MultiProgressStatus status, MsDataFileUri filePath)
+        private ChromatogramLoadingStatus FindStatus(MultiProgressStatus status, FilePathAndSampleId filePath)
         {
             foreach (ChromatogramLoadingStatus loadingStatus in status.ProgressList)
             {
-                if (loadingStatus.FilePath.Equals(filePath))
+                if (loadingStatus.FilePath.GetLocation().Equals(filePath))
                 {
                     return loadingStatus;
                 }
@@ -479,17 +479,17 @@ namespace pwiz.Skyline.Controls.Graphs
 
         private void CancelMissingFiles(MultiProgressStatus status)
         {
-            HashSet<MsDataFileUri> filesWithStatus = null;
+            HashSet<FilePathAndSampleId> filesWithStatus = null;
             foreach (FileProgressControl progressControl in flowFileStatus.Controls)
             {
                 if (!progressControl.IsComplete && !progressControl.IsCanceled)
                 {
                     if (filesWithStatus == null)
                     {
-                        filesWithStatus = new HashSet<MsDataFileUri>(status.ProgressList
-                            .Select(loadingStatus => loadingStatus.FilePath));
+                        filesWithStatus = new HashSet<FilePathAndSampleId>(status.ProgressList
+                            .Select(loadingStatus => loadingStatus.FilePath.GetLocation()));
                     }
-                    if (!filesWithStatus.Contains(progressControl.FilePath))
+                    if (!filesWithStatus.Contains(progressControl.FilePath.GetLocation()))
                         progressControl.IsCanceled = true;
                 }
             }
@@ -505,8 +505,8 @@ namespace pwiz.Skyline.Controls.Graphs
         private void Retry(ChromatogramLoadingStatus status)
         {
             ChromatogramManager.RemoveFile(status.FilePath);
-            if (!_partialProgressList.Contains(status.FilePath))
-                _partialProgressList.Add(status.FilePath);
+            if (!_partialProgressList.Contains(status.FilePath.GetLocation()))
+                _partialProgressList.Add(status.FilePath.GetLocation());
             graphChromatograms.ClearGraph(status.FilePath);
             for (int i = 0; i < flowFileStatus.Controls.Count; i++)
             {
@@ -564,7 +564,7 @@ namespace pwiz.Skyline.Controls.Graphs
             var canceledPath = status.FilePath;
             ModifyDocument(Resources.AllChromatogramsGraph_Cancel_Cancel_file_import,
                 monitor => Program.MainWindow.ModifyDocumentNoUndo(
-                    doc => FilterFiles(doc, info => !info.FilePath.Equals(canceledPath))));
+                    doc => FilterFiles(doc, info => !info.FilePath.Equals(canceledPath.GetLocation()))));
         }
 
         private void RemoveFailedFile(ChromatogramLoadingStatus status)
@@ -573,7 +573,7 @@ namespace pwiz.Skyline.Controls.Graphs
             var canceledPath = status.FilePath;
             ModifyDocument(Resources.AllChromatogramsGraph_RemoveFailedFile_Remove_failed_file,
                 monitor => Program.MainWindow.ModifyDocumentNoUndo(
-                    doc => FilterFiles(doc, info => !info.FilePath.Equals(canceledPath))));
+                    doc => FilterFiles(doc, info => !info.FilePath.Equals(canceledPath.GetLocation()))));
         }
 
         private void ShowGraph()

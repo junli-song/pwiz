@@ -66,7 +66,7 @@ namespace pwiz.Skyline.Model.Results
             // Need a newly loaded copy to allow for concurrent loading for multiple cached files
             _cache = ChromatogramCache.Load(cache.CachePath, new ProgressStatus(), loader, assumeNegativeChargesInPreV11Caches);
 
-            _fileIndex = cache.CachedFiles.IndexOf(f => Equals(f.FilePath, dataFilePath));
+            _fileIndex = cache.CachedFiles.IndexOf(f => Equals(f.FileUri, dataFilePath));
             _chromKeyIndices = cache.GetChromKeys(dataFilePath).OrderBy(v => v.LocationPoints).ToArray();
             foreach (var c in _chromKeyIndices.Where(i => i.Key.Precursor != 0))
             {
@@ -94,7 +94,7 @@ namespace pwiz.Skyline.Model.Results
         }
 
         public override eIonMobilityUnits IonMobilityUnits { get { return _cache != null ? _cache.CachedFiles[_fileIndex].IonMobilityUnits : eIonMobilityUnits.none; } }
-        public override bool SourceHasCombinedIonMobilitySpectra { get { return _cache != null && (_cache.CachedFiles[_fileIndex].FilePath.GetCombineIonMobilitySpectra()); } }
+        public override bool SourceHasCombinedIonMobilitySpectra { get { return _cache != null && (_cache.CachedFiles[_fileIndex].FileUri.GetCombineIonMobilitySpectra()); } }
 
         public override bool GetChromatogram(int id, Target modifiedSequence, Color peptideColor, out ChromExtra extra, out TimeIntensities timeIntensities)
         {

@@ -91,7 +91,7 @@ namespace pwiz.Skyline.Model.Results
             if (!_isSrm)
             {
                 if (!document.Settings.TransitionSettings.FullScan.IsEnabled)
-                    throw new NoFullScanFilteringException(FileInfo.FilePath);
+                    throw new NoFullScanFilteringException(FileInfo.FileUri);
 
                 // Only use the retention time predictor on non-SRM data, and only when
                 // there are enough transitions to cause performance issues with extracting
@@ -115,7 +115,7 @@ namespace pwiz.Skyline.Model.Results
 
             // Create the filter responsible for chromatogram extraction
             bool firstPass = (_retentionTimePredictor != null);
-            _filter = new SpectrumFilter(_document, FileInfo.FilePath, new DataFileInstrumentInfo(dataFile),
+            _filter = new SpectrumFilter(_document, FileInfo.FileUri, new DataFileInstrumentInfo(dataFile),
                 _maxIonMobilityValue, _retentionTimePredictor, firstPass, _globalChromatogramExtractor);
 
             if (!_isSrm && (_filter.EnabledMs || _filter.EnabledMsMs))
@@ -212,7 +212,7 @@ namespace pwiz.Skyline.Model.Results
             var dataFile = _spectra.Detach();
 
             // Start the second pass
-            _filter = new SpectrumFilter(_document, FileInfo.FilePath, _filter, _maxIonMobilityValue, _retentionTimePredictor, false, _globalChromatogramExtractor);
+            _filter = new SpectrumFilter(_document, FileInfo.FileUri, _filter, _maxIonMobilityValue, _retentionTimePredictor, false, _globalChromatogramExtractor);
             _spectra = null;
             _isSrm = false;
 

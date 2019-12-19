@@ -104,7 +104,7 @@ namespace pwiz.Skyline.Model.Results
             }
         }
 
-        private MsDataFileUri MSDataFilePath { get; set; }
+        public MsDataFileUri MSDataFilePath { get; private set; }
         private RetentionTimeAlignmentIndices FileAlignmentIndices { get; set; }
 
         private IList<DetailedPeakFeatureCalculator> DetailedPeakFeatureCalculators { get; set; }
@@ -394,7 +394,7 @@ namespace pwiz.Skyline.Model.Results
         {
             if (_cacheRecalc == null || dataFilePathRecalc == null)
                 return null;
-            int i = _cacheRecalc.CachedFiles.IndexOf(f => Equals(f.FilePath, dataFilePathRecalc));
+            int i = _cacheRecalc.CachedFiles.IndexOf(f => Equals(f.FilePath, dataFilePathRecalc.GetLocation()));
             if (i == -1)
                 throw new ArgumentException(string.Format(Resources.ChromCacheBuilder_GetRecalcFileBuildInfo_The_path___0___was_not_found_among_previously_imported_results_, dataFilePathRecalc));
             var cachedFile = _cacheRecalc.CachedFiles[i];
@@ -524,7 +524,7 @@ namespace pwiz.Skyline.Model.Results
                 throw new ChromCacheBuildException(MSDataFilePath, _chromDataSets.Exception);
             }
 
-            _listCachedFiles.Add(new ChromCachedFile(MSDataFilePath.ChangeCombineIonMobilitySpectra(provider.SourceHasCombinedIonMobilitySpectra),
+            _listCachedFiles.Add(new ChromCachedFile(MSDataFilePath,
                                      _currentFileInfo.Flags,
                                      _currentFileInfo.LastWriteTime,
                                      _currentFileInfo.StartTime,

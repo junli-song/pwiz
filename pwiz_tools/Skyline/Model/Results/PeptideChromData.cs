@@ -152,7 +152,7 @@ namespace pwiz.Skyline.Model.Results
         {
             // Make sure times are evenly spaced before doing any peak detection.
             EvenlySpaceTimes();
-            var explicitPeakBounds = _document.Settings.GetExplicitPeakBounds(NodePep, FileInfo.FilePath);
+            var explicitPeakBounds = _document.Settings.GetExplicitPeakBounds(NodePep, FileInfo.FileUri);
             // Pick peak groups at the precursor level
             foreach (var chromDataSet in _dataSets)
             {

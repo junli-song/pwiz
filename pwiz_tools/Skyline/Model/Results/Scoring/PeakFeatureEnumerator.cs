@@ -643,7 +643,7 @@ namespace pwiz.Skyline.Model.Results.Scoring
             NodePepGroup = nodePepGroup;
             LabelType = labelType;
             ChromatogramSet = chromatogramSet;
-            FilePath = chromGroupInfo.FilePath;
+            FilePath = chromGroupInfo.FileUri;
             FileId = chromatogramSet.FindFile(chromGroupInfo);
             Run = runEnumDict[FileId.GlobalIndex];
 

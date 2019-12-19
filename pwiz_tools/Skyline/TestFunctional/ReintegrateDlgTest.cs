@@ -115,7 +115,7 @@ namespace pwiz.SkylineTestFunctional
             double? startOld, endOld;
             string nameSet = SkylineWindow.Document.Settings.MeasuredResults.Chromatograms[0].Name;
             IdentityPath groupPath = SkylineWindow.Document.GetPathTo((int)SrmDocument.Level.TransitionGroups, 0);
-            var filePath = SkylineWindow.Document.Settings.MeasuredResults.Chromatograms[0].MSDataFileInfos[0].FilePath;
+            var filePath = SkylineWindow.Document.Settings.MeasuredResults.Chromatograms[0].MSDataFileInfos[0].FileUri;
             CheckTimes(groupPath, 0, 0, out startOld, out endOld);
             RunUI(() => 
                 SkylineWindow.ModifyDocument(null,

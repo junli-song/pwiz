@@ -95,9 +95,9 @@ namespace pwiz.SkylineTestData
                 xmlReader.ReadElements(deserializedObjects);
                 Assert.AreEqual(1, deserializedObjects.Count);
                 var compare = deserializedObjects[0];
-                Assert.AreEqual(456.78, compare.MSDataFileInfos[0].FilePath.GetLockMassParameters().LockmassPositive.Value);
-                Assert.AreEqual(567.89, compare.MSDataFileInfos[0].FilePath.GetLockMassParameters().LockmassNegative.Value);
-                Assert.AreEqual(12.34, compare.MSDataFileInfos[0].FilePath.GetLockMassParameters().LockmassTolerance.Value);
+                Assert.AreEqual(456.78, compare.MSDataFileInfos[0].FileUri.GetLockMassParameters().LockmassPositive.Value);
+                Assert.AreEqual(567.89, compare.MSDataFileInfos[0].FileUri.GetLockMassParameters().LockmassNegative.Value);
+                Assert.AreEqual(12.34, compare.MSDataFileInfos[0].FileUri.GetLockMassParameters().LockmassTolerance.Value);
                 Assert.AreEqual(listChromatograms[0], compare);
 
                 // We don't expect any new peptides/precursors/transitions added due to the imported results.

@@ -108,7 +108,7 @@ namespace pwiz.Skyline.Model.Results.Scoring
 
                     if (prediction == null && fullScan.IsEnabled && fullScan.RetentionTimeFilterType == RetentionTimeFilterType.ms2_ids)
                     {
-                        var filePath = summaryPeakData.FileInfo != null ? summaryPeakData.FileInfo.FilePath : null;
+                        var filePath = summaryPeakData.FileInfo != null ? summaryPeakData.FileInfo.FileUri : null;
                         var times = settings.GetBestRetentionTimes(summaryPeakData.NodePep, filePath);
                         if (times.Length > 0)
                         {

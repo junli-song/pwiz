@@ -163,7 +163,7 @@ namespace pwiz.Skyline.Model.Databinding.RowActions
             }
 
             replicateName = chromatogramSet.Name;
-            filePath = chromFileInfo.FilePath;
+            filePath = chromFileInfo.FileUri;
             return true;
         }
 

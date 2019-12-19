@@ -2893,12 +2893,27 @@ namespace pwiz.Skyline
                         if (results == null)
                             return doc;
 
-                        // Set HasMidasSpectra = false for file infos
-                        var listChrom = MidasLibrary.UnflagFiles(dlg.Chromatograms, dlg.LibraryRunsRemovedList.Select(Path.GetFileName)).ToList();
+                        // Did user change results order or name?
+                        var orderedChromatograms = new List<ChromatogramSet>();
+                        foreach (var dlgC in dlg.Chromatograms)
+                        {
+                            // Can't rely on name, so match by file path
+                            var chromatogramSet = results.Chromatograms.FirstOrDefault(c => (c.MSDataFilePaths.All(p => dlgC.ContainsFile(p.GetLocation()))));
+                            if (chromatogramSet != null)
+                            {
+                                orderedChromatograms.Add(Equals(dlgC.Name, chromatogramSet.Name) ?
+                                    chromatogramSet :
+                                    (ChromatogramSet) chromatogramSet.ChangeName(dlgC.Name));
+                            }
+                        }
 
-                        if (ArrayUtil.ReferencesEqual(results.Chromatograms, listChrom))
-                            return doc;
-                        results = listChrom.Count > 0 ? results.ChangeChromatograms(listChrom.ToArray()) : null;
+                        // Set HasMidasSpectra = false for file infos
+                        var listChrom = MidasLibrary.UnflagFiles(orderedChromatograms, dlg.LibraryRunsRemovedList.Select(Path.GetFileName)).ToList();
+                        if (!ArrayUtil.ReferencesEqual(results.Chromatograms, listChrom))
+                        {
+                            results = listChrom.Count > 0 ? results.ChangeChromatograms(listChrom.ToArray()) : null;
+                        }
+
                         doc = doc.ChangeMeasuredResults(results);
                         doc.ValidateResults();
 

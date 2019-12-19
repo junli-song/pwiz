@@ -2606,7 +2606,7 @@ namespace pwiz.Skyline
                 {
                     var chromatogramSet = settings.MeasuredResults.Chromatograms[iResult];
                     if (fileId != null)
-                        filePath = chromatogramSet.GetFileInfo(fileId).FilePath;
+                        filePath = chromatogramSet.GetFileInfo(fileId).FileUri;
                     return chromatogramSet.Name;                    
                 }
             }
@@ -4047,7 +4047,7 @@ namespace pwiz.Skyline
                     {
                         continue;
                     }
-                    string fileItemName = Path.GetFileNameWithoutExtension(SampleHelp.GetFileName(chromFileInfo.FilePath));
+                    string fileItemName = Path.GetFileNameWithoutExtension(SampleHelp.GetFileName(chromFileInfo.FileUri));
                     var menuItemText = string.Format(Resources.SkylineWindow_AlignTimesToFileFormat, fileItemName);
                     var alignToFileItem = new ToolStripMenuItem(menuItemText);
                     if (ReferenceEquals(chromFileInfoId, AlignToFile))
